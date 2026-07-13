@@ -214,24 +214,61 @@ router.get('/dashboard', authMiddleware, (req, res) => {
   });
 });
 
-// GET /api/orders/reports — relatório por período
+// GET /api/orders/reports — relatório por período (DRE)
 router.get('/reports', authMiddleware, (req, res) => {
   const db = getDb();
-  const { start, end } = req.query;
+  const { start, end, period, month, year } = req.query;
 
-  const dateFilter = start && end
-    ? `AND date(o.created_at) BETWEEN '${start}' AND '${end}'`
-    : `AND date(o.created_at) = date('now')`;
+  const now = new Date();
+  const y = parseInt(year || now.getFullYear());
+  const m = parseInt(month || (now.getMonth() + 1));
+  const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  let dateFilter;
+  let periodLabel;
+
+  if (start && end) {
+    dateFilter = `AND date(o.created_at) BETWEEN '${start}' AND '${end}'`;
+    periodLabel = `${start} a ${end}`;
+  } else if (period === 'month') {
+    const monthStr = String(m).padStart(2, '0');
+    dateFilter = `AND strftime('%Y-%m', o.created_at) = '${y}-${monthStr}'`;
+    periodLabel = `${MONTH_NAMES[m - 1]} de ${y}`;
+  } else if (period === 'year') {
+    dateFilter = `AND strftime('%Y', o.created_at) = '${y}'`;
+    periodLabel = `Ano ${y}`;
+  } else {
+    const today = now.toISOString().split('T')[0];
+    dateFilter = `AND date(o.created_at) = '${today}'`;
+    periodLabel = 'Hoje';
+  }
 
   const summary = db.prepare(`
-    SELECT COUNT(*) as total_orders, COALESCE(SUM(total), 0) as revenue,
-           COALESCE(SUM(delivery_fee), 0) as delivery_revenue
-    FROM orders WHERE status != 'cancelled' ${dateFilter}
+    SELECT COUNT(*) as total_orders,
+           COALESCE(SUM(o.total), 0) as revenue,
+           COALESCE(SUM(o.delivery_fee), 0) as delivery_revenue
+    FROM orders o WHERE o.status != 'cancelled' ${dateFilter}
   `).get();
 
+  const cancelled = db.prepare(`
+    SELECT COUNT(*) as count FROM orders o WHERE o.status = 'cancelled' ${dateFilter}
+  `).get();
+
+  const byType = db.prepare(`
+    SELECT o.order_type, COUNT(*) as count, COALESCE(SUM(o.total), 0) as revenue
+    FROM orders o WHERE o.status != 'cancelled' ${dateFilter}
+    GROUP BY o.order_type
+  `).all();
+
+  const byPayment = db.prepare(`
+    SELECT o.payment_method, COUNT(*) as count, COALESCE(SUM(o.total), 0) as revenue
+    FROM orders o WHERE o.status != 'cancelled' ${dateFilter}
+    GROUP BY o.payment_method
+  `).all();
+
   const byDay = db.prepare(`
-    SELECT date(created_at) as day, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue
-    FROM orders WHERE status != 'cancelled' ${dateFilter}
+    SELECT date(o.created_at) as day, COUNT(*) as orders, COALESCE(SUM(o.total), 0) as revenue
+    FROM orders o WHERE o.status != 'cancelled' ${dateFilter}
     GROUP BY day ORDER BY day
   `).all();
 
@@ -243,13 +280,21 @@ router.get('/reports', authMiddleware, (req, res) => {
     GROUP BY oi.product_name ORDER BY total_sold DESC LIMIT 10
   `).all();
 
-  const byPayment = db.prepare(`
-    SELECT payment_method, COUNT(*) as count, COALESCE(SUM(total), 0) as revenue
-    FROM orders WHERE status != 'cancelled' ${dateFilter}
-    GROUP BY payment_method
-  `).all();
-
-  res.json({ summary, by_day: byDay, top_products: topProducts, by_payment: byPayment });
+  const totalOrders = summary.total_orders || 0;
+  res.json({
+    period_label: periodLabel,
+    summary: {
+      total_orders: totalOrders,
+      revenue: summary.revenue,
+      delivery_revenue: summary.delivery_revenue,
+      cancelled_orders: cancelled.count,
+      avg_ticket: totalOrders > 0 ? summary.revenue / totalOrders : 0,
+    },
+    by_type: byType,
+    by_payment: byPayment,
+    by_day: byDay,
+    top_products: topProducts,
+  });
 });
 
 // GET /api/orders/:id — pedido específico (admin)
