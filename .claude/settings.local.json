@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p backend/src/database backend/src/routes backend/src/middleware backend/src/uploads)",
+      "Bash(mkdir -p frontend/src/components/ui frontend/src/pages frontend/src/admin/pages frontend/src/admin/components frontend/src/context frontend/src/hooks frontend/src/utils)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const db = require\\('better-sqlite3'\\); console.log\\('ok'\\)\")",
+      "Bash(node src/database/seed.js)",
+      "Bash(node *)",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(curl -s http://localhost:3001/api/settings)",
+      "Bash(curl -s \"http://localhost:3001/api/products/menu\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"admin@sabordochef.com\\\\\",\\\\\"password\\\\\":\\\\\"admin123\\\\\"}\")",
+      "Bash(npx vite *)",
+      "Bash(taskkill /F /IM node.exe /T)",
+      "PowerShell(Get-Process *)",
+      "Bash(curl -s -X POST http://localhost:3001/api/orders -H \"Content-Type: application/json\" -d \"{\\\\\"customer_name\\\\\":\\\\\"Teste API\\\\\",\\\\\"customer_phone\\\\\":\\\\\"11999990000\\\\\",\\\\\"order_type\\\\\":\\\\\"pickup\\\\\",\\\\\"payment_method\\\\\":\\\\\"pix\\\\\",\\\\\"items\\\\\":[{\\\\\"product_id\\\\\":15,\\\\\"product_name\\\\\":\\\\\"Petit Gateau\\\\\",\\\\\"quantity\\\\\":2}]}\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(git -C \"C:\\\\Users\\\\gabri\\\\OneDrive\\\\Desktop\\\\Vicenzo Projetos\\\\VSCODE\\\\Site menu e pedidos\\\\Menu\" config user.name)",
+      "Bash(git -C \"C:\\\\Users\\\\gabri\\\\OneDrive\\\\Desktop\\\\Vicenzo Projetos\\\\VSCODE\\\\Site menu e pedidos\\\\Menu\" config user.email)",
+      "Bash(git config *)",
+      "Bash(New-Item -ItemType File -Path \"C:\\\\Users\\\\gabri\\\\OneDrive\\\\Desktop\\\\Vicenzo Projetos\\\\VSCODE\\\\Site menu e pedidos\\\\Menu\\\\backend\\\\uploads\\\\.gitkeep\" -Force)",
+      "Bash(Out-Null)",
+      "Bash(git add *)",
+      "Bash(git rm *)"
+    ]
+  }
+}
