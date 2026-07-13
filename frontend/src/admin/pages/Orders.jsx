@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { Filter, RefreshCw, ChevronRight, X, Check } from 'lucide-react';
 import { formatCurrency, formatDate, STATUS_LABELS, STATUS_STEPS } from '../../utils/format';
 import OrderStatus from '../../components/OrderStatus';
@@ -23,11 +24,23 @@ const NEXT_STATUS = {
 
 export default function AdminOrders() {
   const qc = useQueryClient();
+  const { orderId } = useParams();
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Carregar pedido específico quando vem do Dashboard
+  const { data: orderFromUrl } = useQuery({
+    queryKey: ['order-by-id', orderId],
+    queryFn: () => api.get(`/orders/${orderId}`).then(r => r.data),
+    enabled: !!orderId,
+  });
+
+  useEffect(() => {
+    if (orderFromUrl) setSelectedOrder(orderFromUrl);
+  }, [orderFromUrl]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin-orders', filterStatus, filterDate],

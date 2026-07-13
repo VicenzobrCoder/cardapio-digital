@@ -141,6 +141,12 @@ export default function Checkout() {
             >
               💬 Abrir WhatsApp
             </a>
+            <button
+              onClick={() => navigate(`/pedido/${completedOrder.order_number.replace('#', '')}`)}
+              className="btn-secondary justify-center"
+            >
+              Acompanhar Pedido
+            </button>
             <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-700 py-2">
               Voltar ao início
             </button>

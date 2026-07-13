@@ -80,6 +80,11 @@ export default function App() {
                 <AdminLayout><AdminOrders /></AdminLayout>
               </RequireAuth>
             } />
+            <Route path="/admin/pedidos/:orderId" element={
+              <RequireAuth>
+                <AdminLayout><AdminOrders /></AdminLayout>
+              </RequireAuth>
+            } />
             <Route path="/admin/cardapio" element={
               <RequireAuth>
                 <AdminLayout><MenuAdmin /></AdminLayout>
