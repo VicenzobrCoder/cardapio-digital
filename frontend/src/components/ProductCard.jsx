@@ -4,8 +4,11 @@ import { Plus, Star, Clock } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import theme from '../theme.config';
 import ProductModal from './ProductModal';
+import { useCart } from '../context/CartContext';
+import toast from 'react-hot-toast';
 
 export default function ProductCard({ product, index = 0 }) {
+  const { addItem } = useCart();
   const [showModal, setShowModal] = useState(false);
   const [flyAnim, setFlyAnim] = useState(false);
   const cardRef = useRef(null);
@@ -15,6 +18,21 @@ export default function ProductCard({ product, index = 0 }) {
     if (product.options?.length > 0) {
       setShowModal(true);
     } else {
+      const hasPromo = product.promo_price && product.promo_price < product.price;
+      addItem({
+        product_id: product.id,
+        product_name: product.name,
+        product_price: product.price,
+        unit_price: hasPromo ? product.promo_price : product.price,
+        quantity: 1,
+        notes: null,
+        selected_options: [],
+        image_url: product.image_url,
+      });
+      toast.success(`${product.name} adicionado!`, {
+        icon: '🛒',
+        style: { borderRadius: '12px', background: '#333', color: '#fff' },
+      });
       triggerFlyAnimation();
     }
   }
